@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autenticazione con Gun.js</title>
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        #auth-container {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="text"], input[type="password"] {
+            display: block;
+            margin-bottom: 10px;
+            width: 200px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button {
+            display: block;
+            width: 224px;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #0055ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #003399;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="auth-container">
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+
+
+        <button id="login">Login</button>
+        <button id="register">Register</button>
+        <button id="delete">Elimina Account</button>
+    </div>
+    <!--
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    -->
+    <script src="./libraries/gun.js"></script>
+    <script>
+        // Inizializza Gun
+        const gun = Gun();
+
+        // Registrazione
+        document.getElementById('register').addEventListener('click', function() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Controlla se l'utente esiste
+            gun.get('users').get(username).once(data => {
+                if (data) {
+                    alert('Username già in uso. Scegliere un altro username.');
+                    return;
+                }
+
+                // Salva il nuovo utente
+                gun.get('users').get(username).put({password: password});
+                alert('Registrazione completata!');
+            });
+        });
+
+        // Login
+        document.getElementById('login').addEventListener('click', function() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Verifica credenziali
+            gun.get('users').get(username).once(data => {
+                if (!data || data.password !== password) {
+                    alert('Credenziali non valide.');
+                    return;
+                }
+                // Memorizza l'username in localStorage e reindirizza
+                localStorage.setItem('username', username);
+                alert('Login effettuato con successo!');
+                // Qui puoi reindirizzare l'utente alla pagina principale o cambiare la vista
+                window.location.href = './pages/page1.html';
+
+            });
+        });
+
+        // Eliminazione account
+        document.getElementById('delete').addEventListener('click', function() {
+        const username = document.getElementById('username').value;
+        
+        // Chiedi conferma prima di procedere con l'eliminazione
+        const confirmation = confirm('Sei sicuro di voler eliminare questo account? Questa azione è irreversibile.');
+
+        if (!confirmation) {
+            return; // L'utente ha annullato l'operazione
+        }
+
+        // Verifica se l'utente esiste
+        
+        
+        gun.get('users').get(username).once(data => {
+            if (!data) {
+                alert('Utente non trovato.');
+                return;
+            }
+
+            gun.get('users').get(username).get('phrase').put(null);
+            // Elimina l'utente impostando ogni proprietà su null
+
+            //! delete user password
+            
+            gun.get('users').get(username).get('password').put(null);
+
+            gun.get('users').get(username).put(null);
+
+            
+            
+
+            localStorage.removeItem('username');
+            alert('Account eliminato con successo.');
+            window.location.href = 'index.html';
+        });
+     
+    });
+
+    </script>
+</body>
+</html>

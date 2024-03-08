@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benvenuto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        #welcome-section {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <div id="welcome-section">
+        <p id="welcome-message"></p>
+        <span id="user-phrase"></span> </br> </br>
+
+        <!-- Aggiungi un campo di input e un pulsante per la frase -->
+        <input type="text" id="phrase" placeholder="Inserisci la tua frase">
+        <button id="save-phrase" onclick="phrase()">Salva frase</button>
+        <!-- Aggiungi un elemento per visualizzare la frase -->
+        
+
+        <button id="logout" onclick="logout()">Logout</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var gun = Gun();
+            const welcomeMessage = document.getElementById('welcome-message');
+            const username = localStorage.getItem('username');
+    
+            if (username) {
+                welcomeMessage.textContent = `Benvenuto, ${username}!`;
+    
+                // Recupera i dati dell'utente
+                gun.get('users').get(username).once(data => {
+                    // Visualizza la frase se esiste
+                    if (data && data.phrase) {
+                        document.getElementById('user-phrase').textContent = data.phrase;
+                    }
+                });
+    
+            } else {
+                // Se non esiste una sessione valida, reindirizza alla pagina di login
+                window.location.href = '../index.html';
+            }
+    
+            
+        });
+
+        function logout() {
+                alert('Logout effettuato con successo!');
+                localStorage.removeItem('username');
+                window.location.href = '../index.html';
+        }
+
+        function phrase() {
+            var gun = Gun();
+            var username = localStorage.getItem('username');
+            alert('Salvataggio frase');
+            const phrase = document.getElementById('phrase').value;
+            gun.get('users').get(username).get('phrase').put(phrase);
+            document.getElementById('user-phrase').textContent = phrase;
+            alert('Frase salvata!');
+        }
+    </script>
+</body>
+</html>
